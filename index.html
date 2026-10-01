@@ -1,0 +1,1746 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>INstore Scan Dashboard</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            margin: 0;
+            padding: 24px;
+            color: #1f2937;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            margin: 0 0 6px 0;
+        }
+
+        .subtitle {
+            color: #6b7280;
+            margin-bottom: 18px;
+        }
+
+        .status {
+            background: white;
+            padding: 12px 16px;
+            border-radius: 10px;
+            margin-bottom: 18px;
+        }
+
+        .filter-box {
+            background: white;
+            padding: 18px;
+            border-radius: 12px;
+            margin-bottom: 18px;
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns:
+                repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+        }
+
+        .filter-item label {
+            display: block;
+            font-size: 13px;
+            margin-bottom: 6px;
+            color: #6b7280;
+        }
+
+        .filter-item input,
+        .filter-item select {
+            width: 100%;
+            padding: 10px 12px;
+            font-size: 14px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            background: white;
+        }
+
+        .filter-actions {
+            margin-top: 14px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            border: none;
+            border-radius: 8px;
+            padding: 10px 16px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-reset {
+            background: #111827;
+            color: white;
+        }
+
+        .btn-reset:hover {
+            background: #374151;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns:
+                repeat(auto-fit, minmax(180px, 1fr));
+            gap: 14px;
+            margin-bottom: 24px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 18px;
+            box-shadow:
+                0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .card-title {
+            color: #6b7280;
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+
+        .card-value {
+            font-size: 30px;
+            font-weight: bold;
+        }
+
+        .section-title {
+            margin-top: 26px;
+            margin-bottom: 10px;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            background: white;
+            border-radius: 12px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 12px 14px;
+            border-bottom: 1px solid #e5e7eb;
+            text-align: left;
+            white-space: nowrap;
+        }
+
+        th {
+            background: #f9fafb;
+            font-size: 13px;
+        }
+
+        td {
+            font-size: 14px;
+        }
+
+        .empty {
+            color: #6b7280;
+            padding: 20px;
+        }
+
+        .pagination {
+            background: white;
+            padding: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            border-top: 1px solid #e5e7eb;
+            border-radius: 0 0 12px 12px;
+        }
+
+        .pagination-info {
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .pagination-buttons {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .pagination button {
+            background: #f3f4f6;
+            color: #111827;
+            padding: 8px 12px;
+        }
+
+        .pagination button:hover {
+            background: #e5e7eb;
+        }
+
+        .pagination button.active {
+            background: #111827;
+            color: white;
+        }
+
+        .pagination button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 12px;
+            }
+
+            .card-value {
+                font-size: 24px;
+            }
+
+            .pagination {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>INstore Scan Dashboard</h1>
+
+    <div class="subtitle">
+        Monitoring scan resi online
+    </div>
+
+    <div
+        id="status"
+        class="status">
+        Menghubungkan ke Supabase...
+    </div>
+
+    <!-- ============================
+         FILTER
+    ============================= -->
+
+    <div class="filter-box">
+
+        <div class="filter-grid">
+
+            <div class="filter-item">
+                <label>Filter Tanggal</label>
+
+                <input
+                    type="date"
+                    id="dateFilter"
+                >
+            </div>
+
+            <div class="filter-item">
+                <label>Cari AWB</label>
+
+                <input
+                    type="text"
+                    id="awbFilter"
+                    placeholder="Ketik nomor resi..."
+                >
+            </div>
+
+            <div class="filter-item">
+                <label>Ekspedisi</label>
+
+                <select id="expeditionFilter">
+                    <option value="">Semua Ekspedisi</option>
+                </select>
+            </div>
+
+            <div class="filter-item">
+                <label>Sesi</label>
+
+                <select id="sessionFilter">
+                    <option value="">Semua Sesi</option>
+                </select>
+            </div>
+
+            <div class="filter-item">
+                <label>Operator</label>
+
+                <select id="operatorFilter">
+                    <option value="">Semua Operator</option>
+                </select>
+            </div>
+
+            <div class="filter-item">
+                <label>Device</label>
+
+                <select id="deviceFilter">
+                    <option value="">Semua Device</option>
+                </select>
+            </div>
+
+        </div>
+
+        <div class="filter-actions">
+
+            <button
+                class="btn-reset"
+                onclick="resetFilters()">
+                Reset Filter
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- ============================
+         SUMMARY
+    ============================= -->
+
+    <div
+        id="summary"
+        class="grid">
+    </div>
+
+
+    <!-- ============================
+         REKAP EKSPEDISI
+    ============================= -->
+
+    <h2 class="section-title">
+        Rekap Ekspedisi
+    </h2>
+
+    <div
+        id="expeditionSummary"
+        class="grid">
+    </div>
+
+
+    <!-- ============================
+         REKAP SESI
+    ============================= -->
+
+    <h2 class="section-title">
+        Rekap Sesi
+    </h2>
+
+    <div class="table-wrapper">
+
+        <table>
+
+            <thead>
+            <tr>
+                <th>Sesi</th>
+                <th>Total Resi</th>
+            </tr>
+            </thead>
+
+            <tbody id="sessionTable">
+            </tbody>
+
+        </table>
+
+    </div>
+
+
+    <!-- ============================
+         REKAP DEVICE
+    ============================= -->
+
+    <h2 class="section-title">
+        Rekap Device
+    </h2>
+
+    <div class="table-wrapper">
+
+        <table>
+
+            <thead>
+            <tr>
+                <th>Device</th>
+                <th>Total Resi</th>
+            </tr>
+            </thead>
+
+            <tbody id="deviceTable">
+            </tbody>
+
+        </table>
+
+    </div>
+
+
+    <!-- ============================
+         SEMUA RESI
+    ============================= -->
+
+    <h2 class="section-title">
+        Data Scan
+    </h2>
+
+    <div class="table-wrapper">
+
+        <table>
+
+            <thead>
+
+            <tr>
+                <th>No.</th>
+                <th>AWB</th>
+                <th>Ekspedisi</th>
+                <th>Sesi</th>
+                <th>Tanggal</th>
+                <th>Jam</th>
+                <th>Device</th>
+                <th>Operator</th>
+            </tr>
+
+            </thead>
+
+            <tbody id="recentTable">
+            </tbody>
+
+        </table>
+
+        <div class="pagination">
+
+            <div
+                id="paginationInfo"
+                class="pagination-info">
+                -
+            </div>
+
+            <div
+                id="paginationButtons"
+                class="pagination-buttons">
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+    // ============================
+    // SUPABASE CONFIG
+    // ============================
+
+    const SUPABASE_URL =
+        "https://eifhsopszipdbisxkzue.supabase.co";
+
+    const SUPABASE_KEY =
+        "sb_publishable_naX4UB5P9YbTFJX9Bg4sLw_YXbvQ4lC";
+
+    const {
+        createClient
+    } = supabase;
+
+    const db =
+        createClient(
+            SUPABASE_URL,
+            SUPABASE_KEY
+        );
+
+
+    // ============================
+    // ELEMENT
+    // ============================
+
+    const dateInput =
+        document.getElementById(
+            "dateFilter"
+        );
+
+    const awbInput =
+        document.getElementById(
+            "awbFilter"
+        );
+
+    const expeditionInput =
+        document.getElementById(
+            "expeditionFilter"
+        );
+
+    const sessionInput =
+        document.getElementById(
+            "sessionFilter"
+        );
+
+    const operatorInput =
+        document.getElementById(
+            "operatorFilter"
+        );
+
+    const deviceInput =
+        document.getElementById(
+            "deviceFilter"
+        );
+
+
+    // ============================
+    // STATE
+    // ============================
+
+    let allRows = [];
+
+    let filteredRows = [];
+
+    let currentPage = 1;
+
+    const rowsPerPage = 100;
+
+
+    // ============================
+    // TANGGAL HARI INI
+    // ============================
+
+    function todayValue() {
+
+        const now =
+            new Date();
+
+        const year =
+            now.getFullYear();
+
+        const month =
+            String(
+                now.getMonth() + 1
+            ).padStart(
+                2,
+                "0"
+            );
+
+        const day =
+            String(
+                now.getDate()
+            ).padStart(
+                2,
+                "0"
+            );
+
+        return (
+            year +
+            "-" +
+            month +
+            "-" +
+            day
+        );
+    }
+
+
+    // ============================
+    // CONVERT DATE
+    // ============================
+
+    function convertDateToDb(
+        value
+    ) {
+
+        if (!value) {
+            return "";
+        }
+
+        const parts =
+            value.split("-");
+
+        return (
+            parts[2] +
+            "/" +
+            parts[1] +
+            "/" +
+            parts[0]
+        );
+    }
+
+
+    dateInput.value =
+        todayValue();
+
+
+    // ============================
+    // LOAD DATA
+    // ============================
+
+    async function loadDashboard() {
+
+        const selectedDate =
+            convertDateToDb(
+                dateInput.value
+            );
+
+        document
+            .getElementById("status")
+            .innerText =
+            "Mengambil semua data...";
+
+
+        let query =
+            db
+                .from("scan_data")
+                .select("*")
+                .order(
+                    "created_at",
+                    {
+                        ascending: false
+                    }
+                );
+
+
+        if (selectedDate) {
+
+            query =
+                query.eq(
+                    "work_date",
+                    selectedDate
+                );
+        }
+
+
+        const {
+            data,
+            error
+        } =
+            await query;
+
+
+        if (error) {
+
+            console.error(
+                error
+            );
+
+            document
+                .getElementById("status")
+                .innerText =
+                "ERROR: " +
+                error.message;
+
+            return;
+        }
+
+
+        allRows =
+            data || [];
+
+
+        populateFilters(
+            allRows
+        );
+
+
+        currentPage = 1;
+
+        applyFilters();
+
+
+        document
+            .getElementById("status")
+            .innerText =
+            "✓ Terhubung • " +
+            allRows.length +
+            " data ditemukan • Update terakhir: " +
+            new Date()
+                .toLocaleTimeString(
+                    "id-ID"
+                );
+    }
+
+
+    // ============================
+    // POPULATE FILTER
+    // ============================
+
+    function populateFilters(
+        rows
+    ) {
+
+        const expeditions =
+            [...new Set(
+                rows
+                    .map(
+                        row =>
+                            row.expedition
+                    )
+                    .filter(Boolean)
+            )]
+            .sort();
+
+
+        const sessions =
+            [...new Set(
+                rows
+                    .map(
+                        row =>
+                            row.session_id
+                    )
+                    .filter(
+                        value =>
+                            value !== null &&
+                            value !== undefined
+                    )
+            )]
+            .sort(
+                (a, b) =>
+                    Number(a) -
+                    Number(b)
+            );
+
+
+        const operators =
+            [...new Set(
+                rows
+                    .map(
+                        row =>
+                            row.operator_name
+                    )
+                    .filter(Boolean)
+            )]
+            .sort();
+
+
+        const devices =
+            [...new Set(
+                rows
+                    .map(
+                        row =>
+                            row.device_name
+                    )
+                    .filter(Boolean)
+            )]
+            .sort();
+
+
+        fillSelect(
+            expeditionInput,
+            expeditions,
+            "Semua Ekspedisi"
+        );
+
+
+        fillSelect(
+            sessionInput,
+            sessions.map(
+                value =>
+                    "Sesi #" + value
+            ),
+            "Semua Sesi"
+        );
+
+
+        fillSelect(
+            operatorInput,
+            operators,
+            "Semua Operator"
+        );
+
+
+        fillSelect(
+            deviceInput,
+            devices,
+            "Semua Device"
+        );
+    }
+
+
+    function fillSelect(
+        select,
+        values,
+        defaultText
+    ) {
+
+        const oldValue =
+            select.value;
+
+
+        select.innerHTML =
+            `<option value="">
+                ${defaultText}
+            </option>`;
+
+
+        values.forEach(
+            value => {
+
+                const option =
+                    document.createElement(
+                        "option"
+                    );
+
+                option.value =
+                    value;
+
+                option.textContent =
+                    value;
+
+                select.appendChild(
+                    option
+                );
+            }
+        );
+
+
+        const exists =
+            [...select.options]
+                .some(
+                    option =>
+                        option.value ===
+                        oldValue
+                );
+
+
+        if (exists) {
+
+            select.value =
+                oldValue;
+
+        } else {
+
+            select.value =
+                "";
+        }
+    }
+
+
+    // ============================
+    // FILTER DATA
+    // ============================
+
+    function applyFilters() {
+
+        const awb =
+            awbInput.value
+                .trim()
+                .toLowerCase();
+
+
+        const expedition =
+            expeditionInput.value;
+
+
+        const session =
+            sessionInput.value;
+
+
+        const operator =
+            operatorInput.value;
+
+
+        const device =
+            deviceInput.value;
+
+
+        filteredRows =
+            allRows.filter(
+                row => {
+
+                    const rowAwb =
+                        String(
+                            row.awb || ""
+                        )
+                        .toLowerCase();
+
+
+                    const rowSession =
+                        "Sesi #" +
+                        row.session_id;
+
+
+                    if (
+                        awb &&
+                        !rowAwb.includes(
+                            awb
+                        )
+                    ) {
+                        return false;
+                    }
+
+
+                    if (
+                        expedition &&
+                        row.expedition !==
+                        expedition
+                    ) {
+                        return false;
+                    }
+
+
+                    if (
+                        session &&
+                        rowSession !==
+                        session
+                    ) {
+                        return false;
+                    }
+
+
+                    if (
+                        operator &&
+                        row.operator_name !==
+                        operator
+                    ) {
+                        return false;
+                    }
+
+
+                    if (
+                        device &&
+                        row.device_name !==
+                        device
+                    ) {
+                        return false;
+                    }
+
+
+                    return true;
+                }
+            );
+
+
+        currentPage = 1;
+
+
+        renderAll();
+    }
+
+
+    // ============================
+    // RENDER ALL
+    // ============================
+
+    function renderAll() {
+
+        renderSummary(
+            filteredRows
+        );
+
+        renderExpeditions(
+            filteredRows
+        );
+
+        renderSessions(
+            filteredRows
+        );
+
+        renderDevices(
+            filteredRows
+        );
+
+        renderRecent(
+            filteredRows
+        );
+
+        renderPagination(
+            filteredRows
+        );
+    }
+
+
+    // ============================
+    // TOTAL
+    // ============================
+
+    function renderSummary(
+        rows
+    ) {
+
+        const summary =
+            document.getElementById(
+                "summary"
+            );
+
+
+        summary.innerHTML = `
+
+            <div class="card">
+
+                <div class="card-title">
+                    TOTAL SCAN
+                </div>
+
+                <div class="card-value">
+                    ${rows.length}
+                </div>
+
+            </div>
+
+            <div class="card">
+
+                <div class="card-title">
+                    TOTAL EKSPEDISI
+                </div>
+
+                <div class="card-value">
+                    ${
+                        new Set(
+                            rows.map(
+                                row =>
+                                    row.expedition
+                            )
+                        ).size
+                    }
+                </div>
+
+            </div>
+
+            <div class="card">
+
+                <div class="card-title">
+                    TOTAL SESI
+                </div>
+
+                <div class="card-value">
+                    ${
+                        new Set(
+                            rows.map(
+                                row =>
+                                    row.session_id
+                            )
+                        ).size
+                    }
+                </div>
+
+            </div>
+
+            <div class="card">
+
+                <div class="card-title">
+                    TOTAL DEVICE
+                </div>
+
+                <div class="card-value">
+                    ${
+                        new Set(
+                            rows.map(
+                                row =>
+                                    row.device_name
+                            )
+                        ).size
+                    }
+                </div>
+
+            </div>
+        `;
+    }
+
+
+    // ============================
+    // EKSPEDISI
+    // ============================
+
+    function renderExpeditions(
+    rows
+) {
+
+    const result = {};
+
+
+    rows.forEach(
+        row => {
+
+            const name =
+                row.expedition ||
+                "Tidak Dikenal";
+
+            if (!result[name]) {
+
+                result[name] = {
+                    total: 0,
+                    cancel: 0,
+                    valid: 0
+                };
+            }
+
+
+            result[name].total++;
+
+
+            if (
+                String(row.status || "")
+                    .toUpperCase() === "CANCEL"
+            ) {
+
+                result[name].cancel++;
+
+            } else {
+
+                result[name].valid++;
+            }
+        }
+    );
+
+
+    const container =
+        document.getElementById(
+            "expeditionSummary"
+        );
+
+
+    const entries =
+        Object.entries(
+            result
+        );
+
+
+    if (entries.length === 0) {
+
+        container.innerHTML = `
+            <div class="empty">
+                Tidak ada data
+            </div>
+        `;
+
+        return;
+    }
+
+
+    container.innerHTML =
+        entries
+            .sort(
+                (a, b) =>
+                    b[1].total -
+                    a[1].total
+            )
+            .map(
+                ([name, data]) => `
+
+                    <div class="card">
+
+                        <div class="card-title">
+                            ${name}
+                        </div>
+
+                        <div class="card-value">
+                            ${data.total}
+                        </div>
+
+                        <div
+                            style="
+                                margin-top: 6px;
+                                font-size: 12px;
+                                color: #6b7280;
+                            "
+                        >
+                            Cancel: ${data.cancel}
+                            &nbsp;•&nbsp;
+                            Valid: <strong>${data.valid}</strong>
+                        </div>
+
+                    </div>
+                `
+            )
+            .join("");
+}
+
+
+    // ============================
+    // SESSION
+    // ============================
+
+    function renderSessions(
+        rows
+    ) {
+
+        const sessions = {};
+
+
+        rows.forEach(
+            row => {
+
+                const id =
+                    row.session_id;
+
+                sessions[id] =
+                    (sessions[id] || 0)
+                    + 1;
+            }
+        );
+
+
+        const table =
+            document.getElementById(
+                "sessionTable"
+            );
+
+
+        const entries =
+            Object.entries(
+                sessions
+            );
+
+
+        if (entries.length === 0) {
+
+            table.innerHTML = `
+                <tr>
+                    <td colspan="2">
+                        Tidak ada data
+                    </td>
+                </tr>
+            `;
+
+            return;
+        }
+
+
+        table.innerHTML =
+            entries
+                .sort(
+                    (a, b) =>
+                        Number(a[0]) -
+                        Number(b[0])
+                )
+                .map(
+                    ([session, total]) => `
+
+                        <tr>
+
+                            <td>
+                                Sesi #${session}
+                            </td>
+
+                            <td>
+                                ${total}
+                            </td>
+
+                        </tr>
+                    `
+                )
+                .join("");
+    }
+
+
+    // ============================
+    // DEVICE
+    // ============================
+
+    function renderDevices(
+        rows
+    ) {
+
+        const devices = {};
+
+
+        rows.forEach(
+            row => {
+
+                const name =
+                    row.device_name ||
+                    "Unknown";
+
+                devices[name] =
+                    (devices[name] || 0)
+                    + 1;
+            }
+        );
+
+
+        const table =
+            document.getElementById(
+                "deviceTable"
+            );
+
+
+        const entries =
+            Object.entries(
+                devices
+            );
+
+
+        if (entries.length === 0) {
+
+            table.innerHTML = `
+                <tr>
+                    <td colspan="2">
+                        Tidak ada data
+                    </td>
+                </tr>
+            `;
+
+            return;
+        }
+
+
+        table.innerHTML =
+            entries
+                .sort(
+                    (a, b) =>
+                        b[1] - a[1]
+                )
+                .map(
+                    ([device, total]) => `
+
+                        <tr>
+
+                            <td>
+                                ${device}
+                            </td>
+
+                            <td>
+                                ${total}
+                            </td>
+
+                        </tr>
+                    `
+                )
+                .join("");
+    }
+
+
+    // ============================
+    // DATA SCAN
+    // ============================
+
+    function renderRecent(
+        rows
+    ) {
+
+        const table =
+            document.getElementById(
+                "recentTable"
+            );
+
+
+        if (rows.length === 0) {
+
+            table.innerHTML = `
+                <tr>
+                    <td colspan="8">
+                        Tidak ada data
+                    </td>
+                </tr>
+            `;
+
+            return;
+        }
+
+
+        const start =
+            (currentPage - 1)
+            * rowsPerPage;
+
+
+        const end =
+            start +
+            rowsPerPage;
+
+
+        const pageRows =
+            rows.slice(
+                start,
+                end
+            );
+
+
+        table.innerHTML =
+            pageRows
+                .map(
+                    (row, index) => `
+
+                        <tr>
+
+                            <td>
+                                ${start + index + 1}
+                            </td>
+
+                            <td>
+                                ${row.awb || "-"}
+                            </td>
+
+                            <td>
+                                ${row.expedition || "-"}
+                            </td>
+
+                            <td>
+                                #${row.session_id ?? "-"}
+                            </td>
+
+                            <td>
+                                ${row.work_date || "-"}
+                            </td>
+
+                            <td>
+                                ${row.scan_time || "-"}
+                            </td>
+
+                            <td>
+                                ${row.device_name || "-"}
+                            </td>
+
+                            <td>
+                                ${row.operator_name || "-"}
+                            </td>
+
+                        </tr>
+                    `
+                )
+                .join("");
+    }
+
+
+    // ============================
+    // PAGINATION
+    // ============================
+
+    function renderPagination(
+        rows
+    ) {
+
+        const info =
+            document.getElementById(
+                "paginationInfo"
+            );
+
+        const buttons =
+            document.getElementById(
+                "paginationButtons"
+            );
+
+
+        const total =
+            rows.length;
+
+
+        const totalPages =
+            Math.ceil(
+                total /
+                rowsPerPage
+            );
+
+
+        if (total === 0) {
+
+            info.innerText =
+                "Tidak ada data";
+
+            buttons.innerHTML =
+                "";
+
+            return;
+        }
+
+
+        const start =
+            (currentPage - 1)
+            * rowsPerPage +
+            1;
+
+
+        const end =
+            Math.min(
+                currentPage *
+                rowsPerPage,
+                total
+            );
+
+
+        info.innerText =
+            `Menampilkan ${start}-${end} dari ${total} data`;
+
+
+        buttons.innerHTML =
+            "";
+
+
+        const previous =
+            document.createElement(
+                "button"
+            );
+
+        previous.innerText =
+            "←";
+
+        previous.disabled =
+            currentPage === 1;
+
+        previous.onclick =
+            () => {
+
+                if (
+                    currentPage >
+                    1
+                ) {
+
+                    currentPage--;
+
+                    renderRecent(
+                        filteredRows
+                    );
+
+                    renderPagination(
+                        filteredRows
+                    );
+                }
+            };
+
+
+        buttons.appendChild(
+            previous
+        );
+
+
+        let startPage =
+            Math.max(
+                1,
+                currentPage - 2
+            );
+
+
+        let endPage =
+            Math.min(
+                totalPages,
+                currentPage + 2
+            );
+
+
+        if (
+            currentPage <= 3
+        ) {
+            endPage =
+                Math.min(
+                    5,
+                    totalPages
+                );
+        }
+
+
+        if (
+            currentPage >=
+            totalPages - 2
+        ) {
+            startPage =
+                Math.max(
+                    1,
+                    totalPages - 4
+                );
+        }
+
+
+        for (
+            let page =
+                startPage;
+            page <= endPage;
+            page++
+        ) {
+
+            const button =
+                document.createElement(
+                    "button"
+                );
+
+            button.innerText =
+                page;
+
+            if (
+                page ===
+                currentPage
+            ) {
+
+                button.classList.add(
+                    "active"
+                );
+            }
+
+
+            button.onclick =
+                () => {
+
+                    currentPage =
+                        page;
+
+                    renderRecent(
+                        filteredRows
+                    );
+
+                    renderPagination(
+                        filteredRows
+                    );
+                };
+
+
+            buttons.appendChild(
+                button
+            );
+        }
+
+
+        const next =
+            document.createElement(
+                "button"
+            );
+
+        next.innerText =
+            "→";
+
+        next.disabled =
+            currentPage ===
+            totalPages;
+
+        next.onclick =
+            () => {
+
+                if (
+                    currentPage <
+                    totalPages
+                ) {
+
+                    currentPage++;
+
+                    renderRecent(
+                        filteredRows
+                    );
+
+                    renderPagination(
+                        filteredRows
+                    );
+                }
+            };
+
+
+        buttons.appendChild(
+            next
+        );
+    }
+
+
+    // ============================
+    // RESET FILTER
+    // ============================
+
+    function resetFilters() {
+
+        dateInput.value =
+            todayValue();
+
+        awbInput.value =
+            "";
+
+        expeditionInput.value =
+            "";
+
+        sessionInput.value =
+            "";
+
+        operatorInput.value =
+            "";
+
+        deviceInput.value =
+            "";
+
+        loadDashboard();
+    }
+
+
+    // ============================
+    // EVENT FILTER
+    // ============================
+
+    dateInput.addEventListener(
+        "change",
+        loadDashboard
+    );
+
+
+    awbInput.addEventListener(
+        "input",
+        applyFilters
+    );
+
+
+    expeditionInput.addEventListener(
+        "change",
+        applyFilters
+    );
+
+
+    sessionInput.addEventListener(
+        "change",
+        applyFilters
+    );
+
+
+    operatorInput.addEventListener(
+        "change",
+        applyFilters
+    );
+
+
+    deviceInput.addEventListener(
+        "change",
+        applyFilters
+    );
+
+
+    // ============================
+    // LOAD PERTAMA
+    // ============================
+
+    loadDashboard();
+
+
+    // ============================
+    // REALTIME
+    // ============================
+
+    db
+        .channel(
+            "instore-scan-dashboard"
+        )
+        .on(
+            "postgres_changes",
+            {
+                event: "*",
+                schema: "public",
+                table: "scan_data"
+            },
+            payload => {
+
+                console.log(
+                    "Realtime update:",
+                    payload
+                );
+
+                loadDashboard();
+            }
+        )
+        .subscribe(
+            status => {
+
+                console.log(
+                    "Realtime status:",
+                    status
+                );
+            }
+        );
+
+</script>
+
+</body>
+</html>
