@@ -210,6 +210,28 @@
             cursor: not-allowed;
         }
 
+        .btn-export {
+            background: #16a34a;
+            color: white;
+            font-weight: bold;
+        }
+
+        .btn-export:hover {
+            background: #15803d;
+        }
+
+        .btn-export:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .export-status {
+            font-size: 13px;
+            color: #6b7280;
+            align-self: center;
+        }
+
+
         @media (max-width: 600px) {
             body {
                 padding: 12px;
@@ -311,6 +333,18 @@
                 onclick="resetFilters()">
                 Reset Filter
             </button>
+
+            <button
+                id="exportButton"
+                class="btn-export"
+                onclick="exportToGoogleSheets()">
+                KIRIM KE GOOGLE SHEETS
+            </button>
+
+            <span
+                id="exportStatus"
+                class="export-status">
+            </span>
 
         </div>
 
@@ -665,8 +699,20 @@
             .getElementById("status")
             .innerText =
             "✓ Terhubung • " +
-            allRows.length +
-            " data ditemukan • Update terakhir: " +
+            allRows.filter(
+    row =>
+        String(
+            row.status || ""
+        ).toUpperCase() !== "CANCEL"
+).length +
+" scan valid • " +
+allRows.filter(
+    row =>
+        String(
+            row.status || ""
+        ).toUpperCase() === "CANCEL"
+).length +
+" cancel • Update terakhir: " +
             new Date()
                 .toLocaleTimeString(
                     "id-ID"
@@ -968,87 +1014,95 @@
     // ============================
 
     function renderSummary(
-        rows
-    ) {
+    rows
+) {
 
-        const summary =
-            document.getElementById(
-                "summary"
-            );
+    const summary =
+        document.getElementById(
+            "summary"
+        );
+
+    const validRows =
+        rows.filter(
+            row =>
+                String(
+                    row.status || ""
+                ).toUpperCase() !== "CANCEL"
+        );
 
 
-        summary.innerHTML = `
+    summary.innerHTML = `
 
-            <div class="card">
+        <div class="card">
 
-                <div class="card-title">
-                    TOTAL SCAN
-                </div>
-
-                <div class="card-value">
-                    ${rows.length}
-                </div>
-
+            <div class="card-title">
+                TOTAL SCAN
             </div>
 
-            <div class="card">
-
-                <div class="card-title">
-                    TOTAL EKSPEDISI
-                </div>
-
-                <div class="card-value">
-                    ${
-                        new Set(
-                            rows.map(
-                                row =>
-                                    row.expedition
-                            )
-                        ).size
-                    }
-                </div>
-
+            <div class="card-value">
+                ${validRows.length}
             </div>
 
-            <div class="card">
+        </div>
 
-                <div class="card-title">
-                    TOTAL SESI
-                </div>
+        <div class="card">
 
-                <div class="card-value">
-                    ${
-                        new Set(
-                            rows.map(
-                                row =>
-                                    row.session_id
-                            )
-                        ).size
-                    }
-                </div>
-
+            <div class="card-title">
+                TOTAL EKSPEDISI
             </div>
 
-            <div class="card">
-
-                <div class="card-title">
-                    TOTAL DEVICE
-                </div>
-
-                <div class="card-value">
-                    ${
-                        new Set(
-                            rows.map(
-                                row =>
-                                    row.device_name
-                            )
-                        ).size
-                    }
-                </div>
-
+            <div class="card-value">
+                ${
+                    new Set(
+                        validRows.map(
+                            row =>
+                                row.expedition
+                        )
+                    ).size
+                }
             </div>
-        `;
-    }
+
+        </div>
+
+        <div class="card">
+
+            <div class="card-title">
+                TOTAL SESI
+            </div>
+
+            <div class="card-value">
+                ${
+                    new Set(
+                        validRows.map(
+                            row =>
+                                row.session_id
+                        )
+                    ).size
+                }
+            </div>
+
+        </div>
+
+        <div class="card">
+
+            <div class="card-title">
+                TOTAL DEVICE
+            </div>
+
+            <div class="card-value">
+                ${
+                    new Set(
+                        validRows.map(
+                            row =>
+                                row.device_name
+                        )
+                    ).size
+                }
+            </div>
+
+        </div>
+    `;
+}
 
 
     // ============================
@@ -1627,6 +1681,195 @@
         buttons.appendChild(
             next
         );
+    }
+
+
+    // ============================
+    // GOOGLE SHEETS EXPORT
+    // ============================
+
+    // Setelah Google Apps Script dibuat dan di-deploy sebagai Web App,
+    // tempel URL /exec-nya di bawah ini.
+    const GOOGLE_SHEETS_WEB_APP_URL =
+        "https://script.google.com/macros/s/AKfycbyEMtyP4gYKTt-2RMPo5a0w2z-XKKVPSod4XDnGgwxnwj4RjssmLJusRZWS1B3XeU0lHg/exec";
+
+    async function exportToGoogleSheets() {
+
+        const exportButton =
+            document.getElementById("exportButton");
+
+        const exportStatus =
+            document.getElementById("exportStatus");
+
+        if (
+            !GOOGLE_SHEETS_WEB_APP_URL ||
+            GOOGLE_SHEETS_WEB_APP_URL.includes(
+                "https://script.google.com/macros/s/AKfycbyEMtyP4gYKTt-2RMPo5a0w2z-XKKVPSod4XDnGgwxnwj4RjssmLJusRZWS1B3XeU0lHg/exec"
+            )
+        ) {
+            alert(
+                "URL Google Apps Script belum dipasang."
+            );
+            return;
+        }
+
+        // Hanya VALID. CANCEL tidak ikut dikirim.
+        const validRows =
+            filteredRows.filter(
+                row =>
+                    String(
+                        row.status || ""
+                    ).toUpperCase() !== "CANCEL" &&
+                    String(
+                        row.awb || ""
+                    ).trim() !== "" &&
+                    String(
+                        row.expedition || ""
+                    ).trim() !== ""
+            );
+
+        if (validRows.length === 0) {
+            alert(
+                "Tidak ada resi VALID untuk dikirim."
+            );
+            return;
+        }
+
+        // Kelompokkan AWB berdasarkan ekspedisi.
+        const groups = {};
+
+        validRows.forEach(row => {
+
+            const expedition =
+                String(
+                    row.expedition
+                ).trim();
+
+            const awb =
+                String(
+                    row.awb
+                ).trim();
+
+            if (!groups[expedition]) {
+                groups[expedition] = [];
+            }
+
+            if (
+                !groups[expedition].includes(awb)
+            ) {
+                groups[expedition].push(awb);
+            }
+        });
+
+        const totalToSend =
+            Object.values(groups)
+                .reduce(
+                    (total, list) =>
+                        total + list.length,
+                    0
+                );
+
+        const date =
+            convertDateToDb(
+                dateInput.value
+            );
+
+        if (!date) {
+            alert(
+                "Tanggal belum dipilih."
+            );
+            return;
+        }
+
+        const expeditionSummary =
+            Object.entries(groups)
+                .map(
+                    ([name, list]) =>
+                        `${name}: ${list.length}`
+                )
+                .join("\n");
+
+        const confirmed =
+            confirm(
+                "Kirim " +
+                totalToSend +
+                " nomor resi VALID ke Google Sheets?\n\n" +
+                expeditionSummary +
+                "\n\nTanggal: " +
+                date
+            );
+
+        if (!confirmed) {
+            return;
+        }
+
+        exportButton.disabled = true;
+        exportStatus.innerText =
+            "Mengirim...";
+
+        const payload = {
+            date: date,
+            groups: groups
+        };
+
+        try {
+
+            // text/plain sengaja dipakai agar request menjadi
+            // "simple request" dan tidak terkena preflight CORS.
+            // Apps Script tetap menerima JSON melalui postData.contents.
+            await fetch(
+                GOOGLE_SHEETS_WEB_APP_URL,
+                {
+                    method: "POST",
+                    mode: "no-cors",
+                    headers: {
+                        "Content-Type":
+                            "text/plain;charset=utf-8"
+                    },
+                    body:
+                        JSON.stringify(payload)
+                }
+            );
+
+            exportStatus.innerText =
+                "✓ Pengiriman selesai";
+
+            alert(
+                "Permintaan export sudah dikirim.\n\n" +
+                totalToSend +
+                " resi VALID dikirim ke Google Sheets.\n\n" +
+                "Cek sheet " +
+                Object.keys(groups).join(", ") +
+                " untuk memastikan data masuk."
+            );
+
+        } catch (error) {
+
+            console.error(
+                "Export Google Sheets error:",
+                error
+            );
+
+            exportStatus.innerText =
+                "Gagal mengirim";
+
+            alert(
+                "Gagal mengirim ke Google Sheets.\n\n" +
+                error.message
+            );
+
+        } finally {
+
+            exportButton.disabled = false;
+
+            setTimeout(
+                () => {
+                    exportStatus.innerText =
+                        "";
+                },
+                5000
+            );
+        }
     }
 
 
