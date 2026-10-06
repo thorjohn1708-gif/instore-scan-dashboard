@@ -1701,17 +1701,10 @@ allRows.filter(
         const exportStatus =
             document.getElementById("exportStatus");
 
-        if (
-            !GOOGLE_SHEETS_WEB_APP_URL ||
-            GOOGLE_SHEETS_WEB_APP_URL.includes(
-                "https://script.google.com/macros/s/AKfycbz_EmgW2l7L-kRyStIQ7NCOv5xs0FWCUUA-OZyCRo7oLUP4GzxcYH_x3nlpmNPT_sA/exec"
-            )
-        ) {
-            alert(
-                "URL Google Apps Script belum dipasang."
-            );
-            return;
-        }
+        if (!GOOGLE_SHEETS_WEB_APP_URL) {
+    alert("URL Google Apps Script belum dipasang.");
+    return;
+}
 
         // Hanya VALID. CANCEL tidak ikut dikirim.
         const validRows =
