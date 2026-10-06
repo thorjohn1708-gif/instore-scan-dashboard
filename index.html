@@ -1690,48 +1690,93 @@ allRows.filter(
 
     // Setelah Google Apps Script dibuat dan di-deploy sebagai Web App,
     // tempel URL /exec-nya di bawah ini.
-    const GOOGLE_SHEETS_WEB_APP_URL =
-        "https://script.google.com/macros/s/AKfycbz_EmgW2l7L-kRyStIQ7NCOv5xs0FWCUUA-OZyCRo7oLUP4GzxcYH_x3nlpmNPT_sA/exec";
+    // ============================
+// GOOGLE SHEETS EXPORT
+// ============================
 
-    async function exportToGoogleSheets() {
+const GOOGLE_SHEETS_WEB_APP_URL =
+    "https://script.google.com/macros/s/AKfycbz_EmgW2l7L-kRyStIQ7NCOv5xs0FWCUUA-OZyCRo7oLUP4GzxcYH_x3nlpmNPT_sA/exec";
 
-        const exportButton =
-            document.getElementById("exportButton");
 
-        const exportStatus =
-            document.getElementById("exportStatus");
+async function exportToGoogleSheets() {
 
-        if (!GOOGLE_SHEETS_WEB_APP_URL) {
-    alert("URL Google Apps Script belum dipasang.");
-    return;
-}
+    const exportButton =
+        document.getElementById(
+            "exportButton"
+        );
 
-        // Hanya VALID. CANCEL tidak ikut dikirim.
-        const validRows =
-            filteredRows.filter(
-                row =>
+    const exportStatus =
+        document.getElementById(
+            "exportStatus"
+        );
+
+
+    // ============================
+    // CEK URL
+    // ============================
+
+    if (!GOOGLE_SHEETS_WEB_APP_URL) {
+
+        alert(
+            "URL Google Apps Script belum dipasang."
+        );
+
+        return;
+    }
+
+
+    // ============================
+    // AMBIL DATA VALID
+    // ============================
+
+    const validRows =
+        filteredRows.filter(
+            row => {
+
+                const status =
                     String(
                         row.status || ""
-                    ).toUpperCase() !== "CANCEL" &&
+                    ).toUpperCase();
+
+                const awb =
                     String(
                         row.awb || ""
-                    ).trim() !== "" &&
+                    ).trim();
+
+                const expedition =
                     String(
                         row.expedition || ""
-                    ).trim() !== ""
-            );
+                    ).trim();
 
-        if (validRows.length === 0) {
-            alert(
-                "Tidak ada resi VALID untuk dikirim."
-            );
-            return;
-        }
+                return (
+                    status !== "CANCEL" &&
+                    awb !== "" &&
+                    expedition !== ""
+                );
+            }
+        );
 
-        // Kelompokkan AWB berdasarkan ekspedisi.
-        const groups = {};
 
-        validRows.forEach(row => {
+    if (validRows.length === 0) {
+
+        alert(
+            "Tidak ada resi VALID untuk dikirim."
+        );
+
+        return;
+    }
+
+
+    // ============================
+    // KELOMPOKKAN BERDASARKAN
+    // EKSPEDISI
+    // ============================
+
+    const groups = {};
+
+
+    validRows.forEach(
+        row => {
 
             const expedition =
                 String(
@@ -1743,127 +1788,209 @@ allRows.filter(
                     row.awb
                 ).trim();
 
+
             if (!groups[expedition]) {
+
                 groups[expedition] = [];
             }
 
+
+            // Cegah duplikat
             if (
-                !groups[expedition].includes(awb)
+                !groups[expedition]
+                    .includes(awb)
             ) {
-                groups[expedition].push(awb);
-            }
-        });
 
-        const totalToSend =
-            Object.values(groups)
-                .reduce(
-                    (total, list) =>
-                        total + list.length,
-                    0
+                groups[expedition].push(
+                    awb
                 );
-
-        const date =
-            convertDateToDb(
-                dateInput.value
-            );
-
-        if (!date) {
-            alert(
-                "Tanggal belum dipilih."
-            );
-            return;
+            }
         }
+    );
 
-        const expeditionSummary =
-            Object.entries(groups)
-                .map(
-                    ([name, list]) =>
-                        `${name}: ${list.length}`
-                )
-                .join("\n");
 
-        const confirmed =
-            confirm(
-                "Kirim " +
-                totalToSend +
-                " nomor resi VALID ke Google Sheets?\n\n" +
-                expeditionSummary +
-                "\n\nTanggal: " +
-                date
+    // ============================
+    // TOTAL RESI
+    // ============================
+
+    const totalToSend =
+        Object.values(groups)
+            .reduce(
+                (total, list) =>
+                    total + list.length,
+                0
             );
 
-        if (!confirmed) {
-            return;
-        }
 
-        exportButton.disabled = true;
-        exportStatus.innerText =
-            "Mengirim...";
+    if (totalToSend === 0) {
 
-        const payload = {
-            date: date,
-            groups: groups
-        };
+        alert(
+            "Tidak ada nomor resi yang bisa dikirim."
+        );
 
-        try {
-
-            // text/plain sengaja dipakai agar request menjadi
-            // "simple request" dan tidak terkena preflight CORS.
-            // Apps Script tetap menerima JSON melalui postData.contents.
-            await fetch(
-                GOOGLE_SHEETS_WEB_APP_URL,
-                {
-                    method: "POST",
-                    mode: "no-cors",
-                    headers: {
-                        "Content-Type":
-                            "text/plain;charset=utf-8"
-                    },
-                    body:
-                        JSON.stringify(payload)
-                }
-            );
-
-            exportStatus.innerText =
-                "✓ Pengiriman selesai";
-
-            alert(
-                "Permintaan export sudah dikirim.\n\n" +
-                totalToSend +
-                " resi VALID dikirim ke Google Sheets.\n\n" +
-                "Cek sheet " +
-                Object.keys(groups).join(", ") +
-                " untuk memastikan data masuk."
-            );
-
-        } catch (error) {
-
-            console.error(
-                "Export Google Sheets error:",
-                error
-            );
-
-            exportStatus.innerText =
-                "Gagal mengirim";
-
-            alert(
-                "Gagal mengirim ke Google Sheets.\n\n" +
-                error.message
-            );
-
-        } finally {
-
-            exportButton.disabled = false;
-
-            setTimeout(
-                () => {
-                    exportStatus.innerText =
-                        "";
-                },
-                5000
-            );
-        }
+        return;
     }
+
+
+    // ============================
+    // TANGGAL
+    // ============================
+
+    const date =
+        convertDateToDb(
+            dateInput.value
+        );
+
+
+    if (!date) {
+
+        alert(
+            "Tanggal belum dipilih."
+        );
+
+        return;
+    }
+
+
+    // ============================
+    // RINGKASAN
+    // ============================
+
+    const expeditionSummary =
+        Object.entries(groups)
+            .map(
+                ([name, list]) =>
+                    `${name}: ${list.length}`
+            )
+            .join("\n");
+
+
+    const confirmed =
+        confirm(
+            "Kirim " +
+            totalToSend +
+            " nomor resi VALID ke Google Sheets?\n\n" +
+            expeditionSummary +
+            "\n\nTanggal: " +
+            date
+        );
+
+
+    if (!confirmed) {
+        return;
+    }
+
+
+    // ============================
+    // DISABLE BUTTON
+    // ============================
+
+    exportButton.disabled =
+        true;
+
+    exportStatus.innerText =
+        "Mengirim...";
+
+
+    // ============================
+    // PAYLOAD
+    // ============================
+
+    const payload = {
+
+        date: date,
+
+        groups: groups
+
+    };
+
+
+    console.log(
+        "GOOGLE SHEETS PAYLOAD:",
+        payload
+    );
+
+
+    try {
+
+        // ============================
+        // KIRIM KE GOOGLE APPS SCRIPT
+        // ============================
+
+        await fetch(
+            GOOGLE_SHEETS_WEB_APP_URL,
+            {
+                method: "POST",
+
+                mode: "no-cors",
+
+                headers: {
+                    "Content-Type":
+                        "text/plain;charset=utf-8"
+                },
+
+                body:
+                    JSON.stringify(
+                        payload
+                    )
+            }
+        );
+
+
+        // ============================
+        // SUKSES
+        // ============================
+
+        exportStatus.innerText =
+            "✓ Pengiriman selesai";
+
+
+        alert(
+            "Permintaan export sudah dikirim.\n\n" +
+
+            totalToSend +
+            " resi VALID dikirim ke Google Sheets.\n\n" +
+
+            "Ekspedisi:\n" +
+            expeditionSummary
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "Export Google Sheets error:",
+            error
+        );
+
+
+        exportStatus.innerText =
+            "Gagal mengirim";
+
+
+        alert(
+            "Gagal mengirim ke Google Sheets.\n\n" +
+            error.message
+        );
+
+
+    } finally {
+
+        exportButton.disabled =
+            false;
+
+
+        setTimeout(
+            () => {
+
+                exportStatus.innerText =
+                    "";
+
+            },
+            5000
+        );
+    }
+}
 
 
     // ============================
