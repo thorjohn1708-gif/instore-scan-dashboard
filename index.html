@@ -139,6 +139,20 @@
             border-radius: 12px;
         }
 
+        /* Scroll khusus tabel Data Scan; bagian dashboard lain tetap seperti semula. */
+        .data-scan-wrapper {
+            max-height: 600px;
+            overflow: auto;
+            background: white;
+            border-radius: 12px;
+        }
+
+        .data-scan-wrapper thead th {
+            position: sticky;
+            top: 0;
+            z-index: 2;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
@@ -437,7 +451,7 @@
         Data Scan
     </h2>
 
-    <div class="table-wrapper">
+    <div class="data-scan-wrapper">
 
         <table>
 
@@ -460,21 +474,6 @@
             </tbody>
 
         </table>
-
-        <div class="pagination">
-
-            <div
-                id="paginationInfo"
-                class="pagination-info">
-                -
-            </div>
-
-            <div
-                id="paginationButtons"
-                class="pagination-buttons">
-            </div>
-
-        </div>
 
     </div>
 
@@ -547,9 +546,7 @@
 
     let filteredRows = [];
 
-    let currentPage = 1;
 
-    const rowsPerPage = 100;
 
 
     // ============================
@@ -690,7 +687,6 @@
         );
 
 
-        currentPage = 1;
 
         applyFilters();
 
@@ -970,7 +966,6 @@ allRows.filter(
             );
 
 
-        currentPage = 1;
 
 
         renderAll();
@@ -1000,10 +995,6 @@ allRows.filter(
         );
 
         renderRecent(
-            filteredRows
-        );
-
-        renderPagination(
             filteredRows
         );
     }
@@ -1381,12 +1372,11 @@ allRows.filter(
                 "recentTable"
             );
 
-
         if (rows.length === 0) {
 
             table.innerHTML = `
                 <tr>
-                    <td colspan="8">
+                    <td colspan="8" class="empty">
                         Tidak ada data
                     </td>
                 </tr>
@@ -1395,292 +1385,23 @@ allRows.filter(
             return;
         }
 
-
-        const start =
-            (currentPage - 1)
-            * rowsPerPage;
-
-
-        const end =
-            start +
-            rowsPerPage;
-
-
-        const pageRows =
-            rows.slice(
-                start,
-                end
-            );
-
-
         table.innerHTML =
-            pageRows
+            rows
                 .map(
                     (row, index) => `
-
                         <tr>
-
-                            <td>
-                                ${start + index + 1}
-                            </td>
-
-                            <td>
-                                ${row.awb || "-"}
-                            </td>
-
-                            <td>
-                                ${row.expedition || "-"}
-                            </td>
-
-                            <td>
-                                #${row.session_id ?? "-"}
-                            </td>
-
-                            <td>
-                                ${row.work_date || "-"}
-                            </td>
-
-                            <td>
-                                ${row.scan_time || "-"}
-                            </td>
-
-                            <td>
-                                ${row.device_name || "-"}
-                            </td>
-
-                            <td>
-                                ${row.operator_name || "-"}
-                            </td>
-
+                            <td>${index + 1}</td>
+                            <td>${row.awb || "-"}</td>
+                            <td>${row.expedition || "-"}</td>
+                            <td>#${row.session_id ?? "-"}</td>
+                            <td>${row.work_date || "-"}</td>
+                            <td>${row.scan_time || "-"}</td>
+                            <td>${row.device_name || "-"}</td>
+                            <td>${row.operator_name || "-"}</td>
                         </tr>
                     `
                 )
                 .join("");
-    }
-
-
-    // ============================
-    // PAGINATION
-    // ============================
-
-    function renderPagination(
-        rows
-    ) {
-
-        const info =
-            document.getElementById(
-                "paginationInfo"
-            );
-
-        const buttons =
-            document.getElementById(
-                "paginationButtons"
-            );
-
-
-        const total =
-            rows.length;
-
-
-        const totalPages =
-            Math.ceil(
-                total /
-                rowsPerPage
-            );
-
-
-        if (total === 0) {
-
-            info.innerText =
-                "Tidak ada data";
-
-            buttons.innerHTML =
-                "";
-
-            return;
-        }
-
-
-        const start =
-            (currentPage - 1)
-            * rowsPerPage +
-            1;
-
-
-        const end =
-            Math.min(
-                currentPage *
-                rowsPerPage,
-                total
-            );
-
-
-        info.innerText =
-            `Menampilkan ${start}-${end} dari ${total} data`;
-
-
-        buttons.innerHTML =
-            "";
-
-
-        const previous =
-            document.createElement(
-                "button"
-            );
-
-        previous.innerText =
-            "←";
-
-        previous.disabled =
-            currentPage === 1;
-
-        previous.onclick =
-            () => {
-
-                if (
-                    currentPage >
-                    1
-                ) {
-
-                    currentPage--;
-
-                    renderRecent(
-                        filteredRows
-                    );
-
-                    renderPagination(
-                        filteredRows
-                    );
-                }
-            };
-
-
-        buttons.appendChild(
-            previous
-        );
-
-
-        let startPage =
-            Math.max(
-                1,
-                currentPage - 2
-            );
-
-
-        let endPage =
-            Math.min(
-                totalPages,
-                currentPage + 2
-            );
-
-
-        if (
-            currentPage <= 3
-        ) {
-            endPage =
-                Math.min(
-                    5,
-                    totalPages
-                );
-        }
-
-
-        if (
-            currentPage >=
-            totalPages - 2
-        ) {
-            startPage =
-                Math.max(
-                    1,
-                    totalPages - 4
-                );
-        }
-
-
-        for (
-            let page =
-                startPage;
-            page <= endPage;
-            page++
-        ) {
-
-            const button =
-                document.createElement(
-                    "button"
-                );
-
-            button.innerText =
-                page;
-
-            if (
-                page ===
-                currentPage
-            ) {
-
-                button.classList.add(
-                    "active"
-                );
-            }
-
-
-            button.onclick =
-                () => {
-
-                    currentPage =
-                        page;
-
-                    renderRecent(
-                        filteredRows
-                    );
-
-                    renderPagination(
-                        filteredRows
-                    );
-                };
-
-
-            buttons.appendChild(
-                button
-            );
-        }
-
-
-        const next =
-            document.createElement(
-                "button"
-            );
-
-        next.innerText =
-            "→";
-
-        next.disabled =
-            currentPage ===
-            totalPages;
-
-        next.onclick =
-            () => {
-
-                if (
-                    currentPage <
-                    totalPages
-                ) {
-
-                    currentPage++;
-
-                    renderRecent(
-                        filteredRows
-                    );
-
-                    renderPagination(
-                        filteredRows
-                    );
-                }
-            };
-
-
-        buttons.appendChild(
-            next
-        );
     }
 
 
@@ -1690,93 +1411,55 @@ allRows.filter(
 
     // Setelah Google Apps Script dibuat dan di-deploy sebagai Web App,
     // tempel URL /exec-nya di bawah ini.
-    // ============================
-// GOOGLE SHEETS EXPORT
-// ============================
+    const GOOGLE_SHEETS_WEB_APP_URL =
+        "PASTE_URL_GOOGLE_APPS_SCRIPT_DI_SINI";
 
-const GOOGLE_SHEETS_WEB_APP_URL =
-    "https://script.google.com/macros/s/AKfycbz-4jGkw04Jokj2t80pGwZxvRMROnc9eSgWumWVqfW63HciBrrdcuoB03uwQ-C26xnh/exec";
+    async function exportToGoogleSheets() {
 
+        const exportButton =
+            document.getElementById("exportButton");
 
-async function exportToGoogleSheets() {
+        const exportStatus =
+            document.getElementById("exportStatus");
 
-    const exportButton =
-        document.getElementById(
-            "exportButton"
-        );
+        if (
+            !GOOGLE_SHEETS_WEB_APP_URL ||
+            GOOGLE_SHEETS_WEB_APP_URL.includes(
+                "PASTE_URL_GOOGLE_APPS_SCRIPT_DI_SINI"
+            )
+        ) {
+            alert(
+                "URL Google Apps Script belum dipasang."
+            );
+            return;
+        }
 
-    const exportStatus =
-        document.getElementById(
-            "exportStatus"
-        );
-
-
-    // ============================
-    // CEK URL
-    // ============================
-
-    if (!GOOGLE_SHEETS_WEB_APP_URL) {
-
-        alert(
-            "URL Google Apps Script belum dipasang."
-        );
-
-        return;
-    }
-
-
-    // ============================
-    // AMBIL DATA VALID
-    // ============================
-
-    const validRows =
-        filteredRows.filter(
-            row => {
-
-                const status =
+        // Hanya VALID. CANCEL tidak ikut dikirim.
+        const validRows =
+            filteredRows.filter(
+                row =>
                     String(
                         row.status || ""
-                    ).toUpperCase();
-
-                const awb =
+                    ).toUpperCase() !== "CANCEL" &&
                     String(
                         row.awb || ""
-                    ).trim();
-
-                const expedition =
+                    ).trim() !== "" &&
                     String(
                         row.expedition || ""
-                    ).trim();
+                    ).trim() !== ""
+            );
 
-                return (
-                    status !== "CANCEL" &&
-                    awb !== "" &&
-                    expedition !== ""
-                );
-            }
-        );
+        if (validRows.length === 0) {
+            alert(
+                "Tidak ada resi VALID untuk dikirim."
+            );
+            return;
+        }
 
+        // Kelompokkan AWB berdasarkan ekspedisi.
+        const groups = {};
 
-    if (validRows.length === 0) {
-
-        alert(
-            "Tidak ada resi VALID untuk dikirim."
-        );
-
-        return;
-    }
-
-
-    // ============================
-    // KELOMPOKKAN BERDASARKAN
-    // EKSPEDISI
-    // ============================
-
-    const groups = {};
-
-
-    validRows.forEach(
-        row => {
+        validRows.forEach(row => {
 
             const expedition =
                 String(
@@ -1788,209 +1471,127 @@ async function exportToGoogleSheets() {
                     row.awb
                 ).trim();
 
-
             if (!groups[expedition]) {
-
                 groups[expedition] = [];
             }
 
-
-            // Cegah duplikat
             if (
-                !groups[expedition]
-                    .includes(awb)
+                !groups[expedition].includes(awb)
             ) {
-
-                groups[expedition].push(
-                    awb
-                );
+                groups[expedition].push(awb);
             }
-        }
-    );
+        });
 
+        const totalToSend =
+            Object.values(groups)
+                .reduce(
+                    (total, list) =>
+                        total + list.length,
+                    0
+                );
 
-    // ============================
-    // TOTAL RESI
-    // ============================
-
-    const totalToSend =
-        Object.values(groups)
-            .reduce(
-                (total, list) =>
-                    total + list.length,
-                0
+        const date =
+            convertDateToDb(
+                dateInput.value
             );
 
+        if (!date) {
+            alert(
+                "Tanggal belum dipilih."
+            );
+            return;
+        }
 
-    if (totalToSend === 0) {
+        const expeditionSummary =
+            Object.entries(groups)
+                .map(
+                    ([name, list]) =>
+                        `${name}: ${list.length}`
+                )
+                .join("\n");
 
-        alert(
-            "Tidak ada nomor resi yang bisa dikirim."
-        );
+        const confirmed =
+            confirm(
+                "Kirim " +
+                totalToSend +
+                " nomor resi VALID ke Google Sheets?\n\n" +
+                expeditionSummary +
+                "\n\nTanggal: " +
+                date
+            );
 
-        return;
-    }
+        if (!confirmed) {
+            return;
+        }
 
+        exportButton.disabled = true;
+        exportStatus.innerText =
+            "Mengirim...";
 
-    // ============================
-    // TANGGAL
-    // ============================
+        const payload = {
+            date: date,
+            groups: groups
+        };
 
-    const date =
-        convertDateToDb(
-            dateInput.value
-        );
+        try {
 
+            // text/plain sengaja dipakai agar request menjadi
+            // "simple request" dan tidak terkena preflight CORS.
+            // Apps Script tetap menerima JSON melalui postData.contents.
+            await fetch(
+                GOOGLE_SHEETS_WEB_APP_URL,
+                {
+                    method: "POST",
+                    mode: "no-cors",
+                    headers: {
+                        "Content-Type":
+                            "text/plain;charset=utf-8"
+                    },
+                    body:
+                        JSON.stringify(payload)
+                }
+            );
 
-    if (!date) {
+            exportStatus.innerText =
+                "✓ Pengiriman selesai";
 
-        alert(
-            "Tanggal belum dipilih."
-        );
+            alert(
+                "Permintaan export sudah dikirim.\n\n" +
+                totalToSend +
+                " resi VALID dikirim ke Google Sheets.\n\n" +
+                "Cek sheet " +
+                Object.keys(groups).join(", ") +
+                " untuk memastikan data masuk."
+            );
 
-        return;
-    }
+        } catch (error) {
 
+            console.error(
+                "Export Google Sheets error:",
+                error
+            );
 
-    // ============================
-    // RINGKASAN
-    // ============================
+            exportStatus.innerText =
+                "Gagal mengirim";
 
-    const expeditionSummary =
-        Object.entries(groups)
-            .map(
-                ([name, list]) =>
-                    `${name}: ${list.length}`
-            )
-            .join("\n");
+            alert(
+                "Gagal mengirim ke Google Sheets.\n\n" +
+                error.message
+            );
 
+        } finally {
 
-    const confirmed =
-        confirm(
-            "Kirim " +
-            totalToSend +
-            " nomor resi VALID ke Google Sheets?\n\n" +
-            expeditionSummary +
-            "\n\nTanggal: " +
-            date
-        );
+            exportButton.disabled = false;
 
-
-    if (!confirmed) {
-        return;
-    }
-
-
-    // ============================
-    // DISABLE BUTTON
-    // ============================
-
-    exportButton.disabled =
-        true;
-
-    exportStatus.innerText =
-        "Mengirim...";
-
-
-    // ============================
-    // PAYLOAD
-    // ============================
-
-    const payload = {
-
-        date: date,
-
-        groups: groups
-
-    };
-
-
-    console.log(
-        "GOOGLE SHEETS PAYLOAD:",
-        payload
-    );
-
-
-    try {
-
-        // ============================
-        // KIRIM KE GOOGLE APPS SCRIPT
-        // ============================
-
-        await fetch(
-            GOOGLE_SHEETS_WEB_APP_URL,
-            {
-                method: "POST",
-
-                mode: "no-cors",
-
-                headers: {
-                    "Content-Type":
-                        "text/plain;charset=utf-8"
+            setTimeout(
+                () => {
+                    exportStatus.innerText =
+                        "";
                 },
-
-                body:
-                    JSON.stringify(
-                        payload
-                    )
-            }
-        );
-
-
-        // ============================
-        // SUKSES
-        // ============================
-
-        exportStatus.innerText =
-            "✓ Pengiriman selesai";
-
-
-        alert(
-            "Permintaan export sudah dikirim.\n\n" +
-
-            totalToSend +
-            " resi VALID dikirim ke Google Sheets.\n\n" +
-
-            "Ekspedisi:\n" +
-            expeditionSummary
-        );
-
-
-    } catch (error) {
-
-        console.error(
-            "Export Google Sheets error:",
-            error
-        );
-
-
-        exportStatus.innerText =
-            "Gagal mengirim";
-
-
-        alert(
-            "Gagal mengirim ke Google Sheets.\n\n" +
-            error.message
-        );
-
-
-    } finally {
-
-        exportButton.disabled =
-            false;
-
-
-        setTimeout(
-            () => {
-
-                exportStatus.innerText =
-                    "";
-
-            },
-            5000
-        );
+                5000
+            );
+        }
     }
-}
 
 
     // ============================
