@@ -147,6 +147,37 @@
             padding: 22px;
         }
 
+        .filter-box.hidden {
+            display: none;
+        }
+
+        .toggle-filter-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+            padding: 10px 16px;
+            border: 1px solid #dce2eb;
+            border-radius: 10px;
+            background: #fff;
+            color: #344054;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background .15s ease, border-color .15s ease;
+        }
+
+        .toggle-filter-btn:hover {
+            background: #f8fafc;
+            border-color: #c4cedb;
+        }
+
+        .toggle-filter-btn svg {
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
+        }
+
         .panel-heading {
             margin: 0 0 4px;
             color: var(--ink);
@@ -623,7 +654,19 @@
          FILTER
     ============================= -->
 
-    <div class="filter-box">
+    <button
+        id="toggleFilterBtn"
+        class="toggle-filter-btn"
+        onclick="toggleFilterBox()"
+        aria-expanded="false"
+        aria-controls="filterBox">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 6h18"/><path d="M7 12h10"/><path d="M10 18h4"/>
+        </svg>
+        <span id="toggleFilterText">Tampilkan Filter & Pencarian</span>
+    </button>
+
+    <div class="filter-box hidden" id="filterBox">
 
         <h2 class="panel-heading">Filter &amp; pencarian</h2>
         <p class="panel-description">Persempit data scan berdasarkan tanggal, resi, ekspedisi, sesi, operator, atau perangkat.</p>
@@ -1933,6 +1976,29 @@ allRows.filter(
                 },
                 5000
             );
+        }
+    }
+
+
+    // ============================
+    // TOGGLE FILTER BOX
+    // ============================
+
+    function toggleFilterBox() {
+        const filterBox = document.getElementById("filterBox");
+        const toggleBtn = document.getElementById("toggleFilterBtn");
+        const toggleText = document.getElementById("toggleFilterText");
+
+        const isHidden = filterBox.classList.contains("hidden");
+
+        if (isHidden) {
+            filterBox.classList.remove("hidden");
+            toggleText.textContent = "Sembunyikan Filter & Pencarian";
+            toggleBtn.setAttribute("aria-expanded", "true");
+        } else {
+            filterBox.classList.add("hidden");
+            toggleText.textContent = "Tampilkan Filter & Pencarian";
+            toggleBtn.setAttribute("aria-expanded", "false");
         }
     }
 
