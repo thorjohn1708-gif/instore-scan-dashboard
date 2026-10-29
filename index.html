@@ -2,18 +2,13 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-
     <meta
         name="viewport"
         content="width=device-width, initial-scale=1.0"
     >
-
     <title>INstore Scan Dashboard</title>
-
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
     <style>
-
         :root {
             color-scheme: light;
             --ink: #172033;
@@ -31,11 +26,8 @@
             --radius: 16px;
             --shadow: 0 4px 18px rgba(20, 36, 58, .045);
         }
-
         * { box-sizing: border-box; }
-
         html { scroll-behavior: smooth; }
-
         body {
             margin: 0;
             padding: 30px;
@@ -46,13 +38,11 @@
             line-height: 1.5;
             -webkit-font-smoothing: antialiased;
         }
-
         .container {
             width: 100%;
             max-width: 1480px;
             margin: 0 auto;
         }
-
         .page-header {
             display: flex;
             align-items: center;
@@ -60,14 +50,12 @@
             gap: 20px;
             margin-bottom: 22px;
         }
-
         .brand-lockup {
             display: flex;
             align-items: center;
             gap: 14px;
             min-width: 0;
         }
-
         .brand-mark {
             display: grid;
             place-items: center;
@@ -82,7 +70,6 @@
             letter-spacing: -1px;
             box-shadow: 0 6px 14px rgba(20, 36, 58, .15);
         }
-
         h1 {
             margin: 0;
             color: var(--ink);
@@ -91,13 +78,11 @@
             letter-spacing: -.8px;
             line-height: 1.2;
         }
-
         .subtitle {
             margin-top: 5px;
             color: var(--muted);
             font-size: 14px;
         }
-
         .eyebrow {
             margin-bottom: 5px;
             color: var(--red);
@@ -106,7 +91,6 @@
             letter-spacing: 1.3px;
             text-transform: uppercase;
         }
-
         .status {
             display: flex;
             align-items: center;
@@ -122,7 +106,6 @@
             font-weight: 600;
             overflow-wrap: anywhere;
         }
-
         .status::before {
             content: "";
             flex: 0 0 8px;
@@ -132,7 +115,6 @@
             background: #22c55e;
             box-shadow: 0 0 0 4px rgba(34, 197, 94, .12);
         }
-
         .filter-box,
         .table-wrapper,
         .data-scan-wrapper {
@@ -141,16 +123,13 @@
             background: var(--surface);
             box-shadow: var(--shadow);
         }
-
         .filter-box {
             margin-bottom: 22px;
             padding: 22px;
         }
-
         .filter-box.hidden {
             display: none;
         }
-
         .toggle-filter-btn {
             display: inline-flex;
             align-items: center;
@@ -166,18 +145,15 @@
             cursor: pointer;
             transition: background .15s ease, border-color .15s ease;
         }
-
         .toggle-filter-btn:hover {
             background: #f8fafc;
             border-color: #c4cedb;
         }
-
         .toggle-filter-btn svg {
             width: 16px;
             height: 16px;
             flex-shrink: 0;
         }
-
         .panel-heading {
             margin: 0 0 4px;
             color: var(--ink);
@@ -185,21 +161,17 @@
             font-weight: 750;
             letter-spacing: -.25px;
         }
-
         .panel-description {
             margin: 0 0 19px;
             color: var(--muted);
             font-size: 13px;
         }
-
         .filter-grid {
             display: grid;
             grid-template-columns: repeat(3, minmax(0, 1fr));
             gap: 16px;
         }
-
         .filter-item { min-width: 0; }
-
         .filter-item label {
             display: block;
             margin-bottom: 7px;
@@ -207,7 +179,6 @@
             font-size: 12px;
             font-weight: 700;
         }
-
         .filter-item input,
         .filter-item select {
             display: block;
@@ -223,15 +194,12 @@
             font: inherit;
             transition: border-color .15s ease, box-shadow .15s ease;
         }
-
         .filter-item input::placeholder { color: #9aa4b2; }
-
         .filter-item input:focus,
         .filter-item select:focus {
             border-color: #7aa7fa;
             box-shadow: 0 0 0 3px rgba(37, 99, 235, .11);
         }
-
         .filter-actions {
             display: flex;
             align-items: center;
@@ -241,7 +209,6 @@
             padding-top: 17px;
             border-top: 1px solid #eef1f5;
         }
-
         button {
             min-height: 40px;
             padding: 10px 15px;
@@ -253,46 +220,37 @@
             font-weight: 700;
             transition: background .15s ease, border-color .15s ease, transform .15s ease;
         }
-
         button:active:not(:disabled) { transform: translateY(1px); }
-
         .btn-reset {
             border-color: #dce2eb;
             background: #fff;
             color: #344054;
         }
-
         .btn-reset:hover { background: #f8fafc; border-color: #c4cedb; }
-
         .btn-export {
             background: var(--green);
             color: #fff;
             box-shadow: 0 3px 8px rgba(21, 128, 61, .14);
         }
-
         .btn-export:hover { background: #166534; }
-
         .btn-export:disabled,
         button:disabled {
             opacity: .55;
             cursor: not-allowed;
             box-shadow: none;
         }
-
         .export-status {
             color: var(--muted);
             font-size: 12px;
             font-weight: 600;
             overflow-wrap: anywhere;
         }
-
         .grid {
             display: grid;
             grid-template-columns: repeat(4, minmax(0, 1fr));
             gap: 14px;
             margin-bottom: 25px;
         }
-
         .card {
             position: relative;
             min-width: 0;
@@ -303,7 +261,6 @@
             background: var(--surface);
             box-shadow: var(--shadow);
         }
-
         #summary .card::before {
             position: absolute;
             top: 0;
@@ -313,12 +270,10 @@
             background: #cbd5e1;
             content: "";
         }
-
         #summary .card:nth-child(1)::before { background: var(--blue); }
         #summary .card:nth-child(2)::before { background: #0d9488; }
         #summary .card:nth-child(3)::before { background: #8b5cf6; }
         #summary .card:nth-child(4)::before { background: #d97706; }
-
         .card-title {
             margin-bottom: 9px;
             color: var(--muted);
@@ -327,7 +282,6 @@
             letter-spacing: .25px;
             text-transform: uppercase;
         }
-
         .card-value {
             color: var(--ink);
             font-size: clamp(25px, 2.4vw, 32px);
@@ -336,10 +290,8 @@
             line-height: 1.15;
             overflow-wrap: anywhere;
         }
-
         #expeditionSummary .card { padding: 17px 19px; }
         #expeditionSummary .card-value { font-size: 27px; }
-
         .section-title {
             display: flex;
             align-items: center;
@@ -350,7 +302,6 @@
             font-weight: 760;
             letter-spacing: -.35px;
         }
-
         .section-title::before {
             width: 4px;
             height: 20px;
@@ -358,31 +309,26 @@
             background: var(--blue);
             content: "";
         }
-
         .table-wrapper,
         .data-scan-wrapper {
             overflow: auto;
         }
-
         .data-scan-wrapper {
             max-height: 600px;
             overscroll-behavior: contain;
         }
-
         table {
             width: 100%;
             border-collapse: separate;
             border-spacing: 0;
             font-variant-numeric: tabular-nums;
         }
-
         th, td {
             padding: 13px 16px;
             border-bottom: 1px solid #edf0f5;
             text-align: left;
             white-space: nowrap;
         }
-
         th {
             background: #f8fafc;
             color: #586579;
@@ -391,15 +337,12 @@
             letter-spacing: .55px;
             text-transform: uppercase;
         }
-
         td {
             color: #344054;
             font-size: 13px;
         }
-
         tbody tr:last-child td { border-bottom: 0; }
         tbody tr:hover td { background: #f8fbff; }
-
         .data-scan-wrapper thead th {
             position: sticky;
             top: 0;
@@ -407,19 +350,16 @@
             border-bottom: 1px solid #e3e8ef;
             box-shadow: 0 1px 0 rgba(20, 36, 58, .02);
         }
-
         #recentTable td:nth-child(2) {
             color: #172033;
             font-weight: 750;
             letter-spacing: .1px;
         }
-
         .empty {
             padding: 24px;
             color: #8a94a3;
             text-align: center;
         }
-
         .pagination {
             display: flex;
             align-items: center;
@@ -431,9 +371,7 @@
             border-radius: 0 0 var(--radius) var(--radius);
             background: #fff;
         }
-
         
-
 .brand-mark {
     width: 56px;
     height: 56px;
@@ -451,7 +389,6 @@
     padding: 5px;
     box-sizing: border-box;
 }
-
 .brand-mark img {
     display: block;
     width: 100%;
@@ -460,13 +397,11 @@
     max-height: 100%;
     object-fit: contain;
 }
-
 .brand-lockup {
     display: flex;
     align-items: center;
     gap: 14px;
 }
-
 @media (max-width: 600px) {
     .brand-mark {
         width: 48px;
@@ -477,25 +412,20 @@
         max-height: 48px;
         flex-basis: 48px;
     }
-
     .brand-lockup {
         gap: 12px;
     }
 }
-
-
         .pagination-info {
             color: var(--muted);
             font-size: 12px;
         }
-
         .pagination-buttons {
             display: flex;
             align-items: center;
             gap: 6px;
             flex-wrap: wrap;
         }
-
         .pagination button {
             min-height: 34px;
             padding: 7px 11px;
@@ -503,23 +433,18 @@
             background: #fff;
             color: #344054;
         }
-
         .pagination button:hover:not(:disabled) { background: #f1f5f9; }
-
         .pagination button.active {
             border-color: var(--navy);
             background: var(--navy);
             color: #fff;
         }
-
         .pagination button:disabled { opacity: .4; cursor: not-allowed; }
-
         @media (max-width: 1000px) {
             body { padding: 22px; }
             .filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
             .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         }
-
         @media (max-width: 600px) {
             body { padding: 14px; }
             .page-header { align-items: flex-start; margin-bottom: 17px; }
@@ -547,19 +472,16 @@
             .section-title { margin-top: 25px; font-size: 16px; }
             th, td { padding: 11px 13px; }
         }
-
         @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; }
         }
         
-
 .page-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
     gap: 20px;
 }
-
 .cloud-status {
     display: inline-flex;
     align-items: center;
@@ -575,19 +497,16 @@
     white-space: nowrap;
     flex-shrink: 0;
 }
-
 .cloud-status svg {
     width: 16px;
     height: 16px;
     flex-shrink: 0;
 }
-
 @media (max-width: 600px) {
     .page-header {
         flex-wrap: wrap;
         gap: 12px;
     }
-
     .cloud-status {
         margin-left: 0;
         white-space: normal;
@@ -595,31 +514,22 @@
         padding: 7px 10px;
     }
 }
-
-
-
     </style>
 </head>
-
 <body>
-
 <div class="container">
-
     
-
 <header class="page-header">
     <div class="brand-lockup">
         <div class="brand-mark">
             <img src="logo-instore.png" alt="Logo INstore">
         </div>
-
         <div>
             <div class="eyebrow">OPERATIONS • LOGISTICS</div>
             <h1>INstore Scan Dashboard</h1>
             <div class="subtitle">Monitoring & Rekapitulasi Scan Resi Online</div>
         </div>
     </div>
-
     <div class="cloud-status">
         <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -639,9 +549,6 @@
         <span>Cloud Data · Real-time Monitoring</span>
     </div>
 </header>
-
-
-
     <div
         id="status"
         class="status"
@@ -649,11 +556,9 @@
         aria-live="polite">
         Menghubungkan ke Supabase...
     </div>
-
     <!-- ============================
          FILTER
     ============================= -->
-
     <button
         id="toggleFilterBtn"
         class="toggle-filter-btn"
@@ -665,184 +570,130 @@
         </svg>
         <span id="toggleFilterText">Tampilkan Filter & Pencarian</span>
     </button>
-
     <div class="filter-box hidden" id="filterBox">
-
         <h2 class="panel-heading">Filter &amp; pencarian</h2>
         <p class="panel-description">Persempit data scan berdasarkan tanggal, resi, ekspedisi, sesi, operator, atau perangkat.</p>
-
         <div class="filter-grid">
-
             <div class="filter-item">
                 <label>Filter Tanggal</label>
-
                 <input
                     type="date"
                     id="dateFilter"
                 >
             </div>
-
             <div class="filter-item">
                 <label>Cari AWB</label>
-
                 <input
                     type="text"
                     id="awbFilter"
                     placeholder="Ketik nomor resi..."
                 >
             </div>
-
             <div class="filter-item">
                 <label>Ekspedisi</label>
-
                 <select id="expeditionFilter">
                     <option value="">Semua Ekspedisi</option>
                 </select>
             </div>
-
             <div class="filter-item">
                 <label>Sesi</label>
-
                 <select id="sessionFilter">
                     <option value="">Semua Sesi</option>
                 </select>
             </div>
-
             <div class="filter-item">
                 <label>Operator</label>
-
                 <select id="operatorFilter">
                     <option value="">Semua Operator</option>
                 </select>
             </div>
-
             <div class="filter-item">
                 <label>Device</label>
-
                 <select id="deviceFilter">
                     <option value="">Semua Device</option>
                 </select>
             </div>
-
         </div>
-
         <div class="filter-actions">
-
             <button
                 class="btn-reset"
                 onclick="resetFilters()">
                 Reset Filter
             </button>
-
             <button
                 id="exportButton"
                 class="btn-export"
                 onclick="exportToGoogleSheets()">
                 KIRIM KE GOOGLE SHEETS
             </button>
-
             <span
                 id="exportStatus"
                 class="export-status">
             </span>
-
         </div>
-
     </div>
-
-
     <!-- ============================
          SUMMARY
     ============================= -->
-
     <div
         id="summary"
         class="grid">
     </div>
-
-
     <!-- ============================
          REKAP EKSPEDISI
     ============================= -->
-
     <h2 class="section-title">
         Rekap Ekspedisi
     </h2>
-
     <div
         id="expeditionSummary"
         class="grid">
     </div>
-
-
     <!-- ============================
          REKAP SESI
     ============================= -->
-
     <h2 class="section-title">
         Rekap Sesi
     </h2>
-
     <div class="table-wrapper">
-
         <table>
-
             <thead>
             <tr>
                 <th>Sesi</th>
                 <th>Total Resi</th>
             </tr>
             </thead>
-
             <tbody id="sessionTable">
             </tbody>
-
         </table>
-
     </div>
-
-
     <!-- ============================
          REKAP DEVICE
     ============================= -->
-
     <h2 class="section-title">
         Rekap Device
     </h2>
-
     <div class="table-wrapper">
-
         <table>
-
             <thead>
             <tr>
                 <th>Device</th>
                 <th>Total Resi</th>
             </tr>
             </thead>
-
             <tbody id="deviceTable">
             </tbody>
-
         </table>
-
     </div>
-
-
     <!-- ============================
          SEMUA RESI
     ============================= -->
-
     <h2 class="section-title">
         Data Scan
     </h2>
-
     <div class="data-scan-wrapper">
-
         <table>
-
             <thead>
-
             <tr>
                 <th>No.</th>
                 <th>AWB</th>
@@ -853,100 +704,68 @@
                 <th>Device</th>
                 <th>Operator</th>
             </tr>
-
             </thead>
-
             <tbody id="recentTable">
             </tbody>
-
         </table>
-
     </div>
-
 </div>
-
-
 <script>
-
     // ============================
     // SUPABASE CONFIG
     // ============================
-
     const SUPABASE_URL =
         "https://eifhsopszipdbisxkzue.supabase.co";
-
     const SUPABASE_KEY =
         "sb_publishable_naX4UB5P9YbTFJX9Bg4sLw_YXbvQ4lC";
-
     const {
         createClient
     } = supabase;
-
     const db =
         createClient(
             SUPABASE_URL,
             SUPABASE_KEY
         );
-
-
     // ============================
     // ELEMENT
     // ============================
-
     const dateInput =
         document.getElementById(
             "dateFilter"
         );
-
     const awbInput =
         document.getElementById(
             "awbFilter"
         );
-
     const expeditionInput =
         document.getElementById(
             "expeditionFilter"
         );
-
     const sessionInput =
         document.getElementById(
             "sessionFilter"
         );
-
     const operatorInput =
         document.getElementById(
             "operatorFilter"
         );
-
     const deviceInput =
         document.getElementById(
             "deviceFilter"
         );
-
-
     // ============================
     // STATE
     // ============================
-
     let allRows = [];
-
     let filteredRows = [];
-
-
-
-
     // ============================
     // TANGGAL HARI INI
     // ============================
-
     function todayValue() {
-
         const now =
             new Date();
-
         const year =
             now.getFullYear();
-
         const month =
             String(
                 now.getMonth() + 1
@@ -954,7 +773,6 @@
                 2,
                 "0"
             );
-
         const day =
             String(
                 now.getDate()
@@ -962,7 +780,6 @@
                 2,
                 "0"
             );
-
         return (
             year +
             "-" +
@@ -971,23 +788,17 @@
             day
         );
     }
-
-
     // ============================
     // CONVERT DATE
     // ============================
-
     function convertDateToDb(
         value
     ) {
-
         if (!value) {
             return "";
         }
-
         const parts =
             value.split("-");
-
         return (
             parts[2] +
             "/" +
@@ -996,29 +807,20 @@
             parts[0]
         );
     }
-
-
     dateInput.value =
         todayValue();
-
-
     // ============================
     // LOAD DATA
     // ============================
-
     async function loadDashboard() {
-
         const selectedDate =
             convertDateToDb(
                 dateInput.value
             );
-
         document
             .getElementById("status")
             .innerText =
             "Mengambil semua data...";
-
-
         let query =
             db
                 .from("scan_data")
@@ -1029,54 +831,35 @@
                         ascending: false
                     }
                 );
-
-
         if (selectedDate) {
-
             query =
                 query.eq(
                     "work_date",
                     selectedDate
                 );
         }
-
-
         const {
             data,
             error
         } =
             await query;
-
-
         if (error) {
-
             console.error(
                 error
             );
-
             document
                 .getElementById("status")
                 .innerText =
                 "ERROR: " +
                 error.message;
-
             return;
         }
-
-
         allRows =
             data || [];
-
-
         populateFilters(
             allRows
         );
-
-
-
         applyFilters();
-
-
         document
             .getElementById("status")
             .innerText =
@@ -1100,16 +883,12 @@ allRows.filter(
                     "id-ID"
                 );
     }
-
-
     // ============================
     // POPULATE FILTER
     // ============================
-
     function populateFilters(
         rows
     ) {
-
         const expeditions =
             [...new Set(
                 rows
@@ -1120,8 +899,6 @@ allRows.filter(
                     .filter(Boolean)
             )]
             .sort();
-
-
         const sessions =
             [...new Set(
                 rows
@@ -1140,8 +917,6 @@ allRows.filter(
                     Number(a) -
                     Number(b)
             );
-
-
         const operators =
             [...new Set(
                 rows
@@ -1152,8 +927,6 @@ allRows.filter(
                     .filter(Boolean)
             )]
             .sort();
-
-
         const devices =
             [...new Set(
                 rows
@@ -1164,15 +937,11 @@ allRows.filter(
                     .filter(Boolean)
             )]
             .sort();
-
-
         fillSelect(
             expeditionInput,
             expeditions,
             "Semua Ekspedisi"
         );
-
-
         fillSelect(
             sessionInput,
             sessions.map(
@@ -1181,60 +950,43 @@ allRows.filter(
             ),
             "Semua Sesi"
         );
-
-
         fillSelect(
             operatorInput,
             operators,
             "Semua Operator"
         );
-
-
         fillSelect(
             deviceInput,
             devices,
             "Semua Device"
         );
     }
-
-
     function fillSelect(
         select,
         values,
         defaultText
     ) {
-
         const oldValue =
             select.value;
-
-
         select.innerHTML =
             `<option value="">
                 ${defaultText}
             </option>`;
-
-
         values.forEach(
             value => {
-
                 const option =
                     document.createElement(
                         "option"
                     );
-
                 option.value =
                     value;
-
                 option.textContent =
                     value;
-
                 select.appendChild(
                     option
                 );
             }
         );
-
-
         const exists =
             [...select.options]
                 .some(
@@ -1242,65 +994,41 @@ allRows.filter(
                         option.value ===
                         oldValue
                 );
-
-
         if (exists) {
-
             select.value =
                 oldValue;
-
         } else {
-
             select.value =
                 "";
         }
     }
-
-
     // ============================
     // FILTER DATA
     // ============================
-
     function applyFilters() {
-
         const awb =
             awbInput.value
                 .trim()
                 .toLowerCase();
-
-
         const expedition =
             expeditionInput.value;
-
-
         const session =
             sessionInput.value;
-
-
         const operator =
             operatorInput.value;
-
-
         const device =
             deviceInput.value;
-
-
         filteredRows =
             allRows.filter(
                 row => {
-
                     const rowAwb =
                         String(
                             row.awb || ""
                         )
                         .toLowerCase();
-
-
                     const rowSession =
                         "Sesi #" +
                         row.session_id;
-
-
                     if (
                         awb &&
                         !rowAwb.includes(
@@ -1309,8 +1037,6 @@ allRows.filter(
                     ) {
                         return false;
                     }
-
-
                     if (
                         expedition &&
                         row.expedition !==
@@ -1318,8 +1044,6 @@ allRows.filter(
                     ) {
                         return false;
                     }
-
-
                     if (
                         session &&
                         rowSession !==
@@ -1327,8 +1051,6 @@ allRows.filter(
                     ) {
                         return false;
                     }
-
-
                     if (
                         operator &&
                         row.operator_name !==
@@ -1336,8 +1058,6 @@ allRows.filter(
                     ) {
                         return false;
                     }
-
-
                     if (
                         device &&
                         row.device_name !==
@@ -1345,60 +1065,41 @@ allRows.filter(
                     ) {
                         return false;
                     }
-
-
                     return true;
                 }
             );
-
-
-
-
         renderAll();
     }
-
-
     // ============================
     // RENDER ALL
     // ============================
-
     function renderAll() {
-
         renderSummary(
             filteredRows
         );
-
         renderExpeditions(
             filteredRows
         );
-
         renderSessions(
             filteredRows
         );
-
         renderDevices(
             filteredRows
         );
-
         renderRecent(
             filteredRows
         );
     }
-
-
     // ============================
     // TOTAL
     // ============================
-
     function renderSummary(
     rows
 ) {
-
     const summary =
         document.getElementById(
             "summary"
         );
-
     const validRows =
         rows.filter(
             row =>
@@ -1406,28 +1107,19 @@ allRows.filter(
                     row.status || ""
                 ).toUpperCase() !== "CANCEL"
         );
-
-
     summary.innerHTML = `
-
         <div class="card">
-
             <div class="card-title">
                 TOTAL SCAN
             </div>
-
             <div class="card-value">
                 ${validRows.length}
             </div>
-
         </div>
-
         <div class="card">
-
             <div class="card-title">
                 TOTAL EKSPEDISI
             </div>
-
             <div class="card-value">
                 ${
                     new Set(
@@ -1438,15 +1130,11 @@ allRows.filter(
                     ).size
                 }
             </div>
-
         </div>
-
         <div class="card">
-
             <div class="card-title">
                 TOTAL SESI
             </div>
-
             <div class="card-value">
                 ${
                     new Set(
@@ -1457,15 +1145,11 @@ allRows.filter(
                     ).size
                 }
             </div>
-
         </div>
-
         <div class="card">
-
             <div class="card-title">
                 TOTAL DEVICE
             </div>
-
             <div class="card-value">
                 ${
                     new Set(
@@ -1476,82 +1160,55 @@ allRows.filter(
                     ).size
                 }
             </div>
-
         </div>
     `;
 }
-
-
     // ============================
     // EKSPEDISI
     // ============================
-
     function renderExpeditions(
     rows
 ) {
-
     const result = {};
-
-
     rows.forEach(
         row => {
-
             const name =
                 row.expedition ||
                 "Tidak Dikenal";
-
             if (!result[name]) {
-
                 result[name] = {
                     total: 0,
                     cancel: 0,
                     valid: 0
                 };
             }
-
-
             result[name].total++;
-
-
             if (
                 String(row.status || "")
                     .toUpperCase() === "CANCEL"
             ) {
-
                 result[name].cancel++;
-
             } else {
-
                 result[name].valid++;
             }
         }
     );
-
-
     const container =
         document.getElementById(
             "expeditionSummary"
         );
-
-
     const entries =
         Object.entries(
             result
         );
-
-
     if (entries.length === 0) {
-
         container.innerHTML = `
             <div class="empty">
                 Tidak ada data
             </div>
         `;
-
         return;
     }
-
-
     container.innerHTML =
         entries
             .sort(
@@ -1561,17 +1218,13 @@ allRows.filter(
             )
             .map(
                 ([name, data]) => `
-
                     <div class="card">
-
                         <div class="card-title">
                             ${name}
                         </div>
-
                         <div class="card-value">
                             ${data.total}
                         </div>
-
                         <div
                             style="
                                 margin-top: 6px;
@@ -1583,52 +1236,36 @@ allRows.filter(
                             &nbsp;•&nbsp;
                             Valid: <strong>${data.valid}</strong>
                         </div>
-
                     </div>
                 `
             )
             .join("");
 }
-
-
     // ============================
     // SESSION
     // ============================
-
     function renderSessions(
         rows
     ) {
-
         const sessions = {};
-
-
         rows.forEach(
             row => {
-
                 const id =
                     row.session_id;
-
                 sessions[id] =
                     (sessions[id] || 0)
                     + 1;
             }
         );
-
-
         const table =
             document.getElementById(
                 "sessionTable"
             );
-
-
         const entries =
             Object.entries(
                 sessions
             );
-
-
         if (entries.length === 0) {
-
             table.innerHTML = `
                 <tr>
                     <td colspan="2">
@@ -1636,11 +1273,8 @@ allRows.filter(
                     </td>
                 </tr>
             `;
-
             return;
         }
-
-
         table.innerHTML =
             entries
                 .sort(
@@ -1650,63 +1284,44 @@ allRows.filter(
                 )
                 .map(
                     ([session, total]) => `
-
                         <tr>
-
                             <td>
                                 Sesi #${session}
                             </td>
-
                             <td>
                                 ${total}
                             </td>
-
                         </tr>
                     `
                 )
                 .join("");
     }
-
-
     // ============================
     // DEVICE
     // ============================
-
     function renderDevices(
         rows
     ) {
-
         const devices = {};
-
-
         rows.forEach(
             row => {
-
                 const name =
                     row.device_name ||
                     "Unknown";
-
                 devices[name] =
                     (devices[name] || 0)
                     + 1;
             }
         );
-
-
         const table =
             document.getElementById(
                 "deviceTable"
             );
-
-
         const entries =
             Object.entries(
                 devices
             );
-
-
         if (entries.length === 0) {
-
             table.innerHTML = `
                 <tr>
                     <td colspan="2">
@@ -1714,11 +1329,8 @@ allRows.filter(
                     </td>
                 </tr>
             `;
-
             return;
         }
-
-
         table.innerHTML =
             entries
                 .sort(
@@ -1727,39 +1339,29 @@ allRows.filter(
                 )
                 .map(
                     ([device, total]) => `
-
                         <tr>
-
                             <td>
                                 ${device}
                             </td>
-
                             <td>
                                 ${total}
                             </td>
-
                         </tr>
                     `
                 )
                 .join("");
     }
-
-
     // ============================
     // DATA SCAN
     // ============================
-
     function renderRecent(
         rows
     ) {
-
         const table =
             document.getElementById(
                 "recentTable"
             );
-
         if (rows.length === 0) {
-
             table.innerHTML = `
                 <tr>
                     <td colspan="8" class="empty">
@@ -1767,10 +1369,8 @@ allRows.filter(
                     </td>
                 </tr>
             `;
-
             return;
         }
-
         table.innerHTML =
             rows
                 .map(
@@ -1789,26 +1389,22 @@ allRows.filter(
                 )
                 .join("");
     }
-
-
     // ============================
     // GOOGLE SHEETS EXPORT
     // ============================
-
     // Setelah Google Apps Script dibuat dan di-deploy sebagai Web App,
     // tempel URL /exec-nya di bawah ini.
+    const GOOGLE_SHEETS_WEB_APP_URL =
+        "https://script.google.com/macros/s/AKfycbz_EmgW2l7L-kRyStIQ7NCOv5xs0FWCUUA-OZyCRo7oLUP4GzxcYH_x3nlpmNPT_sA/exec";
     async function exportToGoogleSheets() {
-
         const exportButton =
             document.getElementById("exportButton");
-
         const exportStatus =
             document.getElementById("exportStatus");
-
         if (
             !GOOGLE_SHEETS_WEB_APP_URL ||
             GOOGLE_SHEETS_WEB_APP_URL.includes(
-                "https://script.google.com/macros/s/AKfycbz_EmgW2l7L-kRyStIQ7NCOv5xs0FWCUUA-OZyCRo7oLUP4GzxcYH_x3nlpmNPT_sA/exec"
+                "PASTE_URL_GOOGLE_APPS_SCRIPT_DI_SINI"
             )
         ) {
             alert(
@@ -1816,7 +1412,6 @@ allRows.filter(
             );
             return;
         }
-
         // Hanya VALID. CANCEL tidak ikut dikirim.
         const validRows =
             filteredRows.filter(
@@ -1831,40 +1426,32 @@ allRows.filter(
                         row.expedition || ""
                     ).trim() !== ""
             );
-
         if (validRows.length === 0) {
             alert(
                 "Tidak ada resi VALID untuk dikirim."
             );
             return;
         }
-
         // Kelompokkan AWB berdasarkan ekspedisi.
         const groups = {};
-
         validRows.forEach(row => {
-
             const expedition =
                 String(
                     row.expedition
                 ).trim();
-
             const awb =
                 String(
                     row.awb
                 ).trim();
-
             if (!groups[expedition]) {
                 groups[expedition] = [];
             }
-
             if (
                 !groups[expedition].includes(awb)
             ) {
                 groups[expedition].push(awb);
             }
         });
-
         const totalToSend =
             Object.values(groups)
                 .reduce(
@@ -1872,19 +1459,16 @@ allRows.filter(
                         total + list.length,
                     0
                 );
-
         const date =
             convertDateToDb(
                 dateInput.value
             );
-
         if (!date) {
             alert(
                 "Tanggal belum dipilih."
             );
             return;
         }
-
         const expeditionSummary =
             Object.entries(groups)
                 .map(
@@ -1892,7 +1476,6 @@ allRows.filter(
                         `${name}: ${list.length}`
                 )
                 .join("\n");
-
         const confirmed =
             confirm(
                 "Kirim " +
@@ -1902,22 +1485,17 @@ allRows.filter(
                 "\n\nTanggal: " +
                 date
             );
-
         if (!confirmed) {
             return;
         }
-
         exportButton.disabled = true;
         exportStatus.innerText =
             "Mengirim...";
-
         const payload = {
             date: date,
             groups: groups
         };
-
         try {
-
             // text/plain sengaja dipakai agar request menjadi
             // "simple request" dan tidak terkena preflight CORS.
             // Apps Script tetap menerima JSON melalui postData.contents.
@@ -1934,10 +1512,8 @@ allRows.filter(
                         JSON.stringify(payload)
                 }
             );
-
             exportStatus.innerText =
                 "✓ Pengiriman selesai";
-
             alert(
                 "Permintaan export sudah dikirim.\n\n" +
                 totalToSend +
@@ -1946,26 +1522,19 @@ allRows.filter(
                 Object.keys(groups).join(", ") +
                 " untuk memastikan data masuk."
             );
-
         } catch (error) {
-
             console.error(
                 "Export Google Sheets error:",
                 error
             );
-
             exportStatus.innerText =
                 "Gagal mengirim";
-
             alert(
                 "Gagal mengirim ke Google Sheets.\n\n" +
                 error.message
             );
-
         } finally {
-
             exportButton.disabled = false;
-
             setTimeout(
                 () => {
                     exportStatus.innerText =
@@ -1975,19 +1544,14 @@ allRows.filter(
             );
         }
     }
-
-
     // ============================
     // TOGGLE FILTER BOX
     // ============================
-
     function toggleFilterBox() {
         const filterBox = document.getElementById("filterBox");
         const toggleBtn = document.getElementById("toggleFilterBtn");
         const toggleText = document.getElementById("toggleFilterText");
-
         const isHidden = filterBox.classList.contains("hidden");
-
         if (isHidden) {
             filterBox.classList.remove("hidden");
             toggleText.textContent = "Sembunyikan Filter & Pencarian";
@@ -1998,87 +1562,58 @@ allRows.filter(
             toggleBtn.setAttribute("aria-expanded", "false");
         }
     }
-
-
     // ============================
     // RESET FILTER
     // ============================
-
     function resetFilters() {
-
         dateInput.value =
             todayValue();
-
         awbInput.value =
             "";
-
         expeditionInput.value =
             "";
-
         sessionInput.value =
             "";
-
         operatorInput.value =
             "";
-
         deviceInput.value =
             "";
-
         loadDashboard();
     }
-
-
     // ============================
     // EVENT FILTER
     // ============================
-
     dateInput.addEventListener(
         "change",
         loadDashboard
     );
-
-
     awbInput.addEventListener(
         "input",
         applyFilters
     );
-
-
     expeditionInput.addEventListener(
         "change",
         applyFilters
     );
-
-
     sessionInput.addEventListener(
         "change",
         applyFilters
     );
-
-
     operatorInput.addEventListener(
         "change",
         applyFilters
     );
-
-
     deviceInput.addEventListener(
         "change",
         applyFilters
     );
-
-
     // ============================
     // LOAD PERTAMA
     // ============================
-
     loadDashboard();
-
-
     // ============================
     // REALTIME
     // ============================
-
     db
         .channel(
             "instore-scan-dashboard"
@@ -2091,26 +1626,21 @@ allRows.filter(
                 table: "scan_data"
             },
             payload => {
-
                 console.log(
                     "Realtime update:",
                     payload
                 );
-
                 loadDashboard();
             }
         )
         .subscribe(
             status => {
-
                 console.log(
                     "Realtime status:",
                     status
                 );
             }
         );
-
 </script>
-
 </body>
 </html>
