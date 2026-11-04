@@ -1499,28 +1499,36 @@ allRows.filter(
             // text/plain sengaja dipakai agar request menjadi
             // "simple request" dan tidak terkena preflight CORS.
             // Apps Script tetap menerima JSON melalui postData.contents.
-            await fetch(
-                GOOGLE_SHEETS_WEB_APP_URL,
-                {
-                    method: "POST",
-                    mode: "no-cors",
-                    headers: {
-                        "Content-Type":
-                            "text/plain;charset=utf-8"
-                    },
-                    body:
-                        JSON.stringify(payload)
-                }
+            const response = await fetch(GOOGLE_SHEETS_WEB_APP_URL, {
+                method: "POST",
+                // tanpa no-cors: text/plain tetap simple request (tanpa preflight),
+                // dan balasan Apps Script bisa dibaca.
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                body: JSON.stringify(payload)
+            });
+            const text = await response.text();
+            let data;
+            try {
+                data = JSON.parse(text);
+            } catch (parseError) {
+                throw new Error("Balasan Apps Script bukan JSON (cek akses deploy): " + text.slice(0, 200));
+            }
+            if (!data.success) {
+                throw new Error(data.message || "Apps Script mengembalikan gagal.");
+            }
+            const results = data.result || [];
+            const failed = results.filter(r => !r.success);
+            const lines = results.map(r =>
+                r.success
+                    ? `✓ ${r.expedition} → ${r.sheet}: +${r.added} baru, ${r.duplicate} duplikat`
+                    : `✗ ${r.expedition} → ${r.sheet}: ${r.message}`
             );
-            exportStatus.innerText =
-                "✓ Pengiriman selesai";
+            exportStatus.innerText = failed.length
+                ? `⚠ Selesai dengan ${failed.length} gagal`
+                : "✓ Data masuk ke Google Sheets";
             alert(
-                "Permintaan export sudah dikirim.\n\n" +
-                totalToSend +
-                " resi VALID dikirim ke Google Sheets.\n\n" +
-                "Cek sheet " +
-                Object.keys(groups).join(", ") +
-                " untuk memastikan data masuk."
+                (failed.length ? "Sebagian GAGAL masuk:\n\n" : "Berhasil masuk ke Google Sheets:\n\n") +
+                (lines.length ? lines.join("\n") : "(tidak ada hasil dari Apps Script)")
             );
         } catch (error) {
             console.error(
