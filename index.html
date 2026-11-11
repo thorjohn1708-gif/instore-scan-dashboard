@@ -813,76 +813,59 @@
     // LOAD DATA
     // ============================
     async function loadDashboard() {
-        const selectedDate =
-            convertDateToDb(
-                dateInput.value
-            );
-        document
-            .getElementById("status")
-            .innerText =
-            "Mengambil semua data...";
-        let query =
-            db
-                .from("scan_data")
-                .select("*")
-                .order(
-                    "created_at",
-                    {
-                        ascending: false
-                    }
-                );
+    const selectedDate = convertDateToDb(dateInput.value);
+
+    document.getElementById("status").innerText = "Mengambil semua data...";
+
+    let allData = [];
+    let from = 0;
+    const pageSize = 1000;
+    let hasMore = true;
+
+    while (hasMore) {
+        let query = db
+            .from("scan_data")
+            .select("*")
+            .order("created_at", { ascending: false })
+            .range(from, from + pageSize - 1);
+
         if (selectedDate) {
-            query =
-                query.eq(
-                    "work_date",
-                    selectedDate
-                );
+            query = query.eq("work_date", selectedDate);
         }
-        const {
-            data,
-            error
-        } =
-            await query;
+
+        const { data, error } = await query;
+
         if (error) {
-            console.error(
-                error
-            );
-            document
-                .getElementById("status")
-                .innerText =
-                "ERROR: " +
-                error.message;
+            console.error(error);
+            document.getElementById("status").innerText = "ERROR: " + error.message;
             return;
         }
-        allRows =
-            data || [];
-        populateFilters(
-            allRows
-        );
-        applyFilters();
-        document
-            .getElementById("status")
-            .innerText =
-            "✓ Terhubung • " +
-            allRows.filter(
-    row =>
-        String(
-            row.status || ""
-        ).toUpperCase() !== "CANCEL"
-).length +
-" scan valid • " +
-allRows.filter(
-    row =>
-        String(
-            row.status || ""
-        ).toUpperCase() === "CANCEL"
-).length +
-" cancel • Update terakhir: " +
-            new Date()
-                .toLocaleTimeString(
-                    "id-ID"
-                );
+
+        if (!data || data.length === 0) {
+            hasMore = false;
+        } else {
+            allData = allData.concat(data);
+            from += pageSize;
+
+            // Berhenti kalau data yang diterima kurang dari pageSize
+            if (data.length < pageSize) {
+                hasMore = false;
+            }
+        }
     }
+
+    allRows = allData || [];
+    populateFilters(allRows);
+    applyFilters();
+
+    document.getElementById("status").innerText =
+        "✓ Terhubung • " +
+        allRows.filter(row => String(row.status || "").toUpperCase() !== "CANCEL").length +
+        " scan valid • " +
+        allRows.filter(row => String(row.status || "").toUpperCase() === "CANCEL").length +
+        " cancel • Update terakhir: " +
+        new Date().toLocaleTimeString("id-ID");
+}
     // ============================
     // POPULATE FILTER
     // ============================
